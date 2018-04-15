@@ -3,6 +3,7 @@
     padding: 0px;
     font-family: "微软雅黑";
 }
+/*头部*/
 #head{
     height: 100px;
     width: 1200px;
@@ -13,6 +14,7 @@
     line-height: 100px;
     margin: 0 auto;
 }
+/*尾部*/
 #foot{
     height: 100px;
     width: 1200px;
@@ -22,9 +24,11 @@
     font-size: 20px;
     line-height: 100px;
     margin: 0 auto;
+    margin-top: 10px;
 }
+/*主体*/
 #main{
-	height: 100px;
+	height: 200px;
     width: 1200px;
     /*width: 85%;*/
     background-color: goldenrod;
@@ -54,11 +58,29 @@
 }
 #main{
     height: auto;
-    margin: 10px auto;
+    margin: 0px auto;
     overflow: hidden;
 }
 b{
 	color: blue;
+}
+/*表格*/
+#tb1{
+	width: 100%;
+	height: auto;
+	border-collapse: collapse;
+	border-top: solid 0px;
+	border-bottom: solid 0px;
+	margin: 0px auto;
+}
+#tb2{
+	width: 100%;
+	height: auto;
+	border-collapse: collapse;
+	border-top: solid 0px;
+	border-bottom: solid 0px;
+	border-left: solid 0px;
+	border-right: solid 0px;
 }
 .center{
     width: 100%;
@@ -66,12 +88,12 @@ b{
     border-left: 0px solid #FFF;
     border-right: 0px solid #FFF;
     /*box-sizing: border-box;*/
-    height: 600px;
     /*line-height: 600px;*/
     /*float: left;*/
     /*width: 100%;*/
     background-color: azure;
 }
+/*导航*/
 #nav{
 	height: 50px;
     width: 1200px;
@@ -93,6 +115,7 @@ b{
     text-align: center;
     list-style: none;font-size: 20px;
 }
+/*上一页与下一页*/
 #page{
 	height: 50px;
     width: 1200px;
@@ -102,9 +125,6 @@ b{
     font-size: 20px;
     line-height: 50px;
     margin: 0 auto;
-}
-#foot{
-	margin-top: 10px;
 }
 @media only screen and (max-width: 1200px) {
     #head,
@@ -121,6 +141,7 @@ b{
     }
     .center{
         width: 100%;
+        height: auto;
         border-right: hidden;
     }
 }
