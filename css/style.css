@@ -3,14 +3,34 @@
     padding: 0px;
     font-family: "微软雅黑";
 }
-#head,#foot,#main{
+#head{
     height: 100px;
     width: 1200px;
     /*width: 85%;*/
     background-color: goldenrod;
     text-align: center;
-    font-size: 48px;
+    font-size: 20px;
     line-height: 100px;
+    margin: 0 auto;
+}
+#foot{
+    height: 100px;
+    width: 1200px;
+    /*width: 85%;*/
+    background-color: azure;
+    text-align: center;
+    font-size: 20px;
+    line-height: 100px;
+    margin: 0 auto;
+}
+#main{
+	height: 100px;
+    width: 1200px;
+    /*width: 85%;*/
+    background-color: goldenrod;
+    /*text-align: center;*/
+    font-size: 20px;
+    /*line-height: 100px;*/
     margin: 0 auto;
 }
 #head div{
@@ -37,37 +57,70 @@
     margin: 10px auto;
     overflow: hidden;
 }
-.left,
-.center,
-.right{
-    height: 600px;
-    line-height: 600px;
-    float: left;
-    width: 20%;
-    background-color: red
+b{
+	color: blue;
 }
 .center{
-    width: 60%;
-    border-left: 10px solid #FFF;
-    border-right: 10px solid #FFF;
-    box-sizing: border-box;
+    width: 100%;
+    height: auto;
+    border-left: 0px solid #FFF;
+    border-right: 0px solid #FFF;
+    /*box-sizing: border-box;*/
+    height: 600px;
+    /*line-height: 600px;*/
+    /*float: left;*/
+    /*width: 100%;*/
+    background-color: azure;
+}
+#nav{
+	height: 50px;
+    width: 1200px;
+    /*width: 85%;*/
+    background-color: goldenrod;
+    text-align: center;
+    font-size: 20px;
+    line-height: 50px;
+    margin: 0 auto;
+    border-top: solid 2px saddlebrown;
+    border-bottom: solid 2px saddlebrown;
+}
+#nav ul{
+    width: 100%;
+}
+#nav ul li{
+    width: 20%;
+    float: left;
+    text-align: center;
+    list-style: none;font-size: 20px;
+}
+#page{
+	height: 50px;
+    width: 1200px;
+    /*width: 85%;*/
+    background-color: goldenrod;
+    text-align: center;
+    font-size: 20px;
+    line-height: 50px;
+    margin: 0 auto;
+}
+#foot{
+	margin-top: 10px;
 }
 @media only screen and (max-width: 1200px) {
     #head,
+    #nav,
+    #page,
     #foot,
     #main{
     width: 100%;
     }
 }
 @media only screen and (max-width: 980px) {
-    .right{
+    .left,.right{
         display: none;
     }
-    .left{
-        width: 30%;
-    }
     .center{
-        width: 70%;
+        width: 100%;
         border-right: hidden;
     }
 }
@@ -78,7 +131,7 @@
         width: 100%;
         display: block;
         height: 200px;
-        line-height: 200px;
+        /*line-height: 200px;*/
     }
         .left,.right{
         display: none;
@@ -87,8 +140,8 @@
         border: hidden;
         border-top: 0px  solid #FFFFFF;
         border-bottom: 0px solid #FFFFFF;
-        height: 600px;
-        line-height: 600px;
+        height: auto;
+        /*line-height: 600px;*/
     }
     #head ul{
         display: none;
