@@ -80,10 +80,13 @@
         height: 200px;
         line-height: 200px;
     }
+        .left,.right{
+        display: none;
+    }
     .center{
         border: hidden;
-        border-top: 10px  solid #FFFFFF;
-        border-bottom: 10px solid #FFFFFF;
+        border-top: 0px  solid #FFFFFF;
+        border-bottom: 0px solid #FFFFFF;
         height: 600px;
         line-height: 600px;
     }
