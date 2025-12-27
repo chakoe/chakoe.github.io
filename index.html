@@ -246,6 +246,10 @@
                 font-size: 16px;
             }
             
+            .history-list {
+                max-height: 200px;
+            }
+            
             .record-item {
                 padding: 8px 10px;
             }
@@ -377,7 +381,7 @@
             const target = new Date(targetDate);
             
             // 设置为UTC时间，确保时区一致性
-            const targetUTC = Date.UTC(target.getFullYear(), target.getMonth(), target.getDate());
+            const targetUTC = Date.UTC(target.getUTCFullYear(), target.getUTCMonth(), target.getUTCDate());
             const baseUTC = CONFIG.baseDate.getTime(); // CONFIG.baseDate已经是UTC时间
             
             // 计算天数差
@@ -408,10 +412,16 @@
 
         // 生成历史圩日记录
         function generateMarketDayRecords(endDate = new Date(), days = CONFIG.defaultHistoryDays) {
+            // 参数验证，确保传入的是有效的日期对象
+            if (!(endDate instanceof Date) || isNaN(endDate.getTime())) {
+                console.error('generateMarketDayRecords函数需要有效的日期对象参数');
+                endDate = new Date();
+            }
+            
             const records = [];
             
-            // 确保endDate是UTC时间
-            const endDateUTC = Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+            // 确保使用UTC时间进行计算
+            const endDateUTC = Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate());
             
             for (let i = 0; i <= days; i++) {
                 // 使用UTC时间确保日期计算的准确性
@@ -435,7 +445,7 @@
         // 更新页面显示
         function updateDisplay(targetDate) {
             // 确保targetDate始终是有效的日期对象
-            targetDate = targetDate instanceof Date && !isNaN(targetDate.getTime()) ? new Date(targetDate) : new Date();
+            targetDate = targetDate instanceof Date && !isNaN(targetDate.getTime()) ? targetDate : new Date();
             const currentDateString = getCurrentDateString(new Date());
             const selectedDateString = getCurrentDateString(targetDate);
             const selectedWeekday = getChineseDayOfWeek(targetDate);
@@ -528,30 +538,15 @@
             // 初始化日期选择器
             initializeDatePicker();
             
-            // 检查是否需要回到当日日期
+            // 每分钟更新一次当前时间（如果显示的是当前日期）
             const datePicker = document.getElementById('datePicker');
             const today = getCurrentDateString(new Date());
             
-            // 如果当前选择的不是当日日期，则切换回当日日期
-            if (datePicker.value !== today) {
-                datePicker.value = today;
-                updateDisplay(new Date());
-                // 更新本地存储
-                localStorage.setItem('selectedMarketDate', today);
-            }
-            
-            // 每分钟更新一次当前时间（如果显示的是当前日期）
             setInterval(() => {
                 if (datePicker.value === today) {
                     updateDisplay();
                 }
             }, 60000);
-            
-            // 设置自动刷新（每5分钟刷新一次）
-            const refreshInterval = 5 * 60 * 1000; // 5分钟的毫秒数
-            setInterval(() => {
-                location.reload();
-            }, refreshInterval);
         });
 
         // 添加点击效果
