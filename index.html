@@ -316,7 +316,7 @@
 
         // 配置常量
         const CONFIG = {
-            baseDate: new Date(Date.UTC(2025, 10, 12)), // 太守基准日（使用UTC时间）
+            baseDate: new Date(2025, 10, 12), // 太守基准日（使用本地时间）
             marketNames: ['太守', '新桥', '芦圩'],
             defaultHistoryDays: 30
         };
@@ -329,8 +329,8 @@
                 date = new Date();
             }
             
-            // 使用UTC时间确保日期格式的一致性
-            return `${date.getUTCFullYear()}-${(date.getUTCMonth() + 1).toString().padStart(2, '0')}-${date.getUTCDate().toString().padStart(2, '0')}`;
+            // 使用本地时间确保日期显示与用户期望一致
+            return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
         }
 
         // 工具函数：将日期字符串转换为日期对象
@@ -353,8 +353,8 @@
             const month = parseInt(parts[1], 10) - 1; // 月份从0开始
             const day = parseInt(parts[2], 10);
             
-            // 使用UTC时间创建日期对象，避免时区问题
-            return new Date(Date.UTC(year, month, day));
+            // 使用本地时间创建日期对象，确保日期选择与显示一致
+            return new Date(year, month, day);
         }
 
         // 工具函数：获取中文星期
@@ -366,7 +366,7 @@
             }
             
             const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
-            return weekdays[date.getDay()];
+            return weekdays[date.getDay()]; // 使用本地星期确保与本地日期一致
         }
 
         // 计算指定日期的圩日信息
@@ -377,23 +377,26 @@
                 return null;
             }
             
-            // 确保使用UTC时间进行计算，避免时区问题
+            // 统一使用本地时间进行计算，确保与用户选择的日期一致
             const target = new Date(targetDate);
             
-            // 设置为UTC时间，确保时区一致性
-            const targetUTC = Date.UTC(target.getUTCFullYear(), target.getUTCMonth(), target.getUTCDate());
-            const baseUTC = CONFIG.baseDate.getTime(); // CONFIG.baseDate已经是UTC时间
+            // 计算目标日期与基准日期的天数差
+            const baseDate = CONFIG.baseDate;
+            
+            // 重置时间部分为0，仅比较日期部分
+            const targetDateOnly = new Date(target.getFullYear(), target.getMonth(), target.getDate());
+            const baseDateOnly = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate());
             
             // 计算天数差
-            const diffTime = targetUTC - baseUTC;
+            const diffTime = targetDateOnly - baseDateOnly;
             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
             
             // 计算圩日名称索引 (0: 太守, 1: 新桥, 2: 芦圩)
             const marketNameIndex = ((diffDays % 3) + 3) % 3; // 处理负数情况
             
-            // 计算下一个圩日（使用UTC时间）
-            const nextDateUTC = new Date(targetUTC + 24 * 60 * 60 * 1000); // 加一天的毫秒数
-            const nextDate = new Date(nextDateUTC);
+            // 计算下一个圩日（使用本地时间）
+            const nextDate = new Date(target);
+            nextDate.setDate(nextDate.getDate() + 1);
             const nextMarketNameIndex = (marketNameIndex + 1) % 3;
             
             return {
@@ -420,13 +423,13 @@
             
             const records = [];
             
-            // 确保使用UTC时间进行计算
-            const endDateUTC = Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate());
+            // 使用本地时间确保日期计算的一致性
+            const endDateLocal = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
             
             for (let i = 0; i <= days; i++) {
-                // 使用UTC时间确保日期计算的准确性
-                const targetDateUTC = endDateUTC - (i * 24 * 60 * 60 * 1000); // 减去i天的毫秒数
-                const targetDate = new Date(targetDateUTC);
+                // 计算目标日期（使用本地时间）
+                const targetDate = new Date(endDateLocal);
+                targetDate.setDate(targetDate.getDate() - i);
                 
                 const info = calculateMarketDayInfo(targetDate);
                 if (info) { // 确保info不为null
@@ -446,7 +449,8 @@
         function updateDisplay(targetDate) {
             // 确保targetDate始终是有效的日期对象
             targetDate = targetDate instanceof Date && !isNaN(targetDate.getTime()) ? targetDate : new Date();
-            const currentDateString = getCurrentDateString(new Date());
+            const now = new Date();
+            const currentDateString = getCurrentDateString(now);
             const selectedDateString = getCurrentDateString(targetDate);
             const selectedWeekday = getChineseDayOfWeek(targetDate);
             const marketData = calculateMarketDayInfo(targetDate);
@@ -502,34 +506,14 @@
             const today = new Date();
             const todayString = getCurrentDateString(today);
             
-            // 从本地存储加载上次选择的日期
-            const savedDate = localStorage.getItem('selectedMarketDate');
-            
-            // 设置默认日期（优先使用保存的日期，否则使用今天）
-            if (savedDate) {
-                // 验证保存的日期格式是否正确
-                const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-                if (dateRegex.test(savedDate)) {
-                    datePicker.value = savedDate;
-                    updateDisplay(parseDateString(savedDate));
-                } else {
-                    console.error('保存的日期格式不正确:', savedDate);
-                    localStorage.removeItem('selectedMarketDate');
-                    datePicker.value = todayString;
-                    updateDisplay(today);
-                }
-            } else {
-                datePicker.value = todayString;
-                updateDisplay(today);
-            }
+            // 始终将日期选择器设置为今天的日期
+            datePicker.value = todayString;
+            updateDisplay(today);
             
             // 添加日期选择事件监听器
             datePicker.addEventListener('change', function() {
                 const selectedDate = parseDateString(this.value);
                 updateDisplay(selectedDate);
-                
-                // 将选择的日期保存到本地存储
-                localStorage.setItem('selectedMarketDate', this.value);
             });
         }
 
@@ -540,9 +524,9 @@
             
             // 每分钟更新一次当前时间（如果显示的是当前日期）
             const datePicker = document.getElementById('datePicker');
-            const today = getCurrentDateString(new Date());
             
             setInterval(() => {
+                const today = getCurrentDateString(new Date());
                 if (datePicker.value === today) {
                     updateDisplay();
                 }
