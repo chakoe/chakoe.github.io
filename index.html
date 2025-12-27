@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>赶圩日历</title>
+    <title>三天为一圩日历 - 预览版</title>
     <style>
         * {
             margin: 0;
@@ -12,13 +12,13 @@
         }
         
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', 'Microsoft YaHei', Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 15px;
         }
         
         .container {
@@ -27,8 +27,14 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             width: 100%;
             max-width: 500px;
-            padding: 30px;
-            margin: 20px;
+            padding: 25px;
+            margin: 10px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
         }
         
         .header {
@@ -40,7 +46,7 @@
             font-size: 28px;
             font-weight: bold;
             color: #2196F3;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         
         .divider {
@@ -55,7 +61,7 @@
         }
         
         .current-date {
-            font-size: 18px;
+            font-size: 16px;
             color: #666;
             margin-bottom: 15px;
         }
@@ -64,13 +70,14 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             margin-bottom: 20px;
         }
         
         .status-text {
             font-size: 22px;
             font-weight: bold;
+            transition: color 0.3s ease;
         }
         
         .market-day {
@@ -82,8 +89,21 @@
         }
         
         .market-icon {
-            font-size: 24px;
+            font-size: 28px;
             color: #4CAF50;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
         }
         
         .next-market {
@@ -107,7 +127,7 @@
         }
         
         .history-title {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             text-align: center;
             margin-bottom: 15px;
@@ -122,18 +142,44 @@
             padding: 10px;
         }
         
+        /* 自定义滚动条 */
+        .history-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .history-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        
+        .history-list::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+        
+        .history-list::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
         .record-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 12px;
-            margin-bottom: 5px;
-            border-radius: 6px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
             background: #f8f9fa;
+            transition: all 0.2s ease;
+            cursor: pointer;
         }
         
         .record-item:last-child {
             margin-bottom: 0;
+        }
+        
+        .record-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         
         .market-record {
@@ -148,6 +194,7 @@
         
         .record-date {
             font-weight: 500;
+            font-size: 14px;
         }
         
         .market-date {
@@ -159,7 +206,7 @@
         }
         
         .record-type {
-            font-size: 14px;
+            font-size: 13px;
         }
         
         .market-type {
@@ -168,6 +215,40 @@
         
         .normal-type {
             color: #999;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+                margin: 5px;
+            }
+            
+            .title {
+                font-size: 24px;
+            }
+            
+            .status-text {
+                font-size: 20px;
+            }
+            
+            .market-icon {
+                font-size: 24px;
+            }
+            
+            .current-date,
+            .days-left,
+            .next-date {
+                font-size: 14px;
+            }
+            
+            .history-title {
+                font-size: 16px;
+            }
+            
+            .record-item {
+                padding: 8px 10px;
+            }
         }
     </style>
 </head>
@@ -181,6 +262,19 @@
         
         <div class="date-section">
             <div class="current-date" id="currentDate">当前日期: 加载中...</div>
+            
+            <!-- 添加日期选择器 -->
+            <div style="margin-bottom: 15px;">
+                <input type="date" id="datePicker" style="
+                    width: 100%;
+                    padding: 10px;
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    background: white;
+                    cursor: pointer;
+                ">
+            </div>
             
             <div class="market-status">
                 <div class="status-text" id="marketStatus">加载中...</div>
@@ -206,7 +300,7 @@
     </div>
 
     <script>
-        // 圩日记录接口
+        // 圩日记录类
         class MarketDayRecord {
             constructor(date, isMarketDay, period, note) {
                 this.date = date;
@@ -216,123 +310,160 @@
             }
         }
 
-        // 获取当前日期
-        function getCurrentDate() {
-            const now = new Date();
-            return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+        // 配置常量
+        const CONFIG = {
+            baseDate: new Date(Date.UTC(2025, 10, 12)), // 太守基准日（使用UTC时间）
+            marketNames: ['太守', '新桥', '芦圩'],
+            defaultHistoryDays: 30
+        };
+
+        // 工具函数：获取当前日期字符串 (YYYY-MM-DD)
+        function getCurrentDateString(date = new Date()) {
+            // 参数验证
+            if (!(date instanceof Date) || isNaN(date.getTime())) {
+                console.error('getCurrentDateString函数需要有效的日期对象参数');
+                date = new Date();
+            }
+            
+            // 使用UTC时间确保日期格式的一致性
+            return `${date.getUTCFullYear()}-${(date.getUTCMonth() + 1).toString().padStart(2, '0')}-${date.getUTCDate().toString().padStart(2, '0')}`;
         }
 
-        // 三个圩的名称数组
-        const marketNames = ['太守', '新桥', '芦圩'];
-        
-        // 根据您指定的基准日期计算圩日
-        function calculateMarketDays() {
-            const now = new Date();
-            // 修正基准日设置，确保时区一致
-            const baseDate = new Date('2025-11-12T00:00:00'); // 太守基准日
+        // 工具函数：将日期字符串转换为日期对象
+        function parseDateString(dateString) {
+            // 参数验证
+            if (typeof dateString !== 'string') {
+                console.error('parseDateString函数需要字符串参数');
+                return new Date();
+            }
             
-            // 计算当前日期与基准日期的天数差（包括当天）
-            // 修正算法：确保基准日(2025-11-12)为太守圩日
-            const diffTime = now.getTime() - baseDate.getTime();
+            // 验证日期格式 (YYYY-MM-DD)
+            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+            if (!dateRegex.test(dateString)) {
+                console.error('无效的日期格式，应为YYYY-MM-DD:', dateString);
+                return new Date();
+            }
+            
+            const parts = dateString.split('-');
+            const year = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1; // 月份从0开始
+            const day = parseInt(parts[2], 10);
+            
+            // 使用UTC时间创建日期对象，避免时区问题
+            return new Date(Date.UTC(year, month, day));
+        }
+
+        // 工具函数：获取中文星期
+        function getChineseDayOfWeek(date) {
+            // 参数验证，确保传入的是有效的日期对象
+            if (!(date instanceof Date) || isNaN(date.getTime())) {
+                console.error('getChineseDayOfWeek函数需要有效的日期对象参数');
+                return '未知';
+            }
+            
+            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+            return weekdays[date.getDay()];
+        }
+
+        // 计算指定日期的圩日信息
+        function calculateMarketDayInfo(targetDate) {
+            // 参数验证，确保传入的是有效的日期对象
+            if (!(targetDate instanceof Date) || isNaN(targetDate.getTime())) {
+                console.error('calculateMarketDayInfo函数需要有效的日期对象参数');
+                return null;
+            }
+            
+            // 确保使用UTC时间进行计算，避免时区问题
+            const target = new Date(targetDate);
+            
+            // 设置为UTC时间，确保时区一致性
+            const targetUTC = Date.UTC(target.getFullYear(), target.getMonth(), target.getDate());
+            const baseUTC = CONFIG.baseDate.getTime(); // CONFIG.baseDate已经是UTC时间
+            
+            // 计算天数差
+            const diffTime = targetUTC - baseUTC;
             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
             
-            // 根据天数差计算圩日名称索引
-            // 基准日(2025-11-12)：diffDays=0 → index=0 → 太守
-            // 2025-11-13：diffDays=1 → index=1 → 新桥
-            // 2025-11-14：diffDays=2 → index=2 → 芦圩
-            // 2025-11-15：diffDays=3 → index=0 → 太守
-            const marketNameIndex = diffDays % 3;
-            const currentMarketName = marketNames[marketNameIndex];
+            // 计算圩日名称索引 (0: 太守, 1: 新桥, 2: 芦圩)
+            const marketNameIndex = ((diffDays % 3) + 3) % 3; // 处理负数情况
             
-            // 每天都是圩日
-            const isMarketDay = true;
-            
-            // 下一个圩日就是明天
-            const nextMarketDate = new Date(now);
-            nextMarketDate.setDate(now.getDate() + 1);
-            const nextMarketDay = `${nextMarketDate.getFullYear()}-${(nextMarketDate.getMonth() + 1).toString().padStart(2, '0')}-${nextMarketDate.getDate().toString().padStart(2, '0')}`;
-            
-            // 下一个圩日的名称
+            // 计算下一个圩日（使用UTC时间）
+            const nextDateUTC = new Date(targetUTC + 24 * 60 * 60 * 1000); // 加一天的毫秒数
+            const nextDate = new Date(nextDateUTC);
             const nextMarketNameIndex = (marketNameIndex + 1) % 3;
-            const nextMarketName = marketNames[nextMarketNameIndex];
-
+            
             return {
-                isMarketDay,
-                daysToNextMarket: 1, // 每天都有圩日
-                nextMarketDay,
-                currentMarketName,
-                nextMarketName,
-                debugInfo: `当前日期: ${now.toISOString().split('T')[0]}, 天数差: ${diffDays}, 索引: ${marketNameIndex}`
+                date: target,
+                dateString: getCurrentDateString(target),
+                isMarketDay: true, // 每天都是圩日
+                marketName: CONFIG.marketNames[marketNameIndex],
+                marketNameIndex: marketNameIndex,
+                nextMarketDate: nextDate,
+                nextMarketDateString: getCurrentDateString(nextDate),
+                nextMarketName: CONFIG.marketNames[nextMarketNameIndex],
+                nextMarketNameIndex: nextMarketNameIndex,
+                daysToNextMarket: 1
             };
         }
 
-        // 加载圩日记录
-        function loadMarketDayRecords() {
-            const sampleRecords = [];
-            const now = new Date();
-            const baseDate = new Date('2025-11-12T00:00:00'); // 太守基准日
+        // 生成历史圩日记录
+        function generateMarketDayRecords(endDate = new Date(), days = CONFIG.defaultHistoryDays) {
+            const records = [];
             
-            // 生成过去30天的示例数据（从新到旧排序）
-            for (let i = 0; i <= 30; i++) {
-                const date = new Date(now);
-                date.setDate(now.getDate() - i);
+            // 确保endDate是UTC时间
+            const endDateUTC = Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+            
+            for (let i = 0; i <= days; i++) {
+                // 使用UTC时间确保日期计算的准确性
+                const targetDateUTC = endDateUTC - (i * 24 * 60 * 60 * 1000); // 减去i天的毫秒数
+                const targetDate = new Date(targetDateUTC);
                 
-                const dateStr = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-                
-                // 计算基准日期与当前日期的天数差（包括当天）
-                // 基准日(2025-11-12)是太守圩日
-                const diffTime = date.getTime() - baseDate.getTime();
-                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                
-                // 根据天数差计算圩日名称索引
-                // 确保基准日(2025-11-12)对应太守(索引0)
-                const marketNameIndex = (diffDays % 3 + 3) % 3; // 处理负数情况
-                const marketName = marketNames[marketNameIndex];
-                
-                // 每天都是圩日
-                const isMarketDay = true;
-                const marketNote = `${marketName}圩日`;
-
-                sampleRecords.push(new MarketDayRecord(
-                    dateStr,
-                    isMarketDay,
-                    marketNameIndex,
-                    marketNote
-                ));
+                const info = calculateMarketDayInfo(targetDate);
+                if (info) { // 确保info不为null
+                    records.push(new MarketDayRecord(
+                        info.dateString,
+                        info.isMarketDay,
+                        info.marketNameIndex,
+                        `${info.marketName}圩日`
+                    ));
+                }
             }
             
-            return sampleRecords;
+            return records;
         }
 
         // 更新页面显示
-        function updateDisplay() {
-            const currentDate = getCurrentDate();
-            const marketData = calculateMarketDays();
-            const records = loadMarketDayRecords();
+        function updateDisplay(targetDate) {
+            // 确保targetDate始终是有效的日期对象
+            targetDate = targetDate instanceof Date && !isNaN(targetDate.getTime()) ? new Date(targetDate) : new Date();
+            const currentDateString = getCurrentDateString(new Date());
+            const selectedDateString = getCurrentDateString(targetDate);
+            const selectedWeekday = getChineseDayOfWeek(targetDate);
+            const marketData = calculateMarketDayInfo(targetDate);
+            const records = generateMarketDayRecords(targetDate);
 
-            // 更新当前日期
-            document.getElementById('currentDate').textContent = `当前日期: ${currentDate}`;
+            // 更新当前日期显示，添加星期信息
+            if (selectedDateString === currentDateString) {
+                document.getElementById('currentDate').textContent = `当前日期: ${selectedDateString} 星期: ${selectedWeekday}`;
+            } else {
+                document.getElementById('currentDate').textContent = `选择日期: ${selectedDateString} 星期: ${selectedWeekday}`;
+            }
 
             // 更新圩日状态
             const marketStatus = document.getElementById('marketStatus');
             const marketIcon = document.getElementById('marketIcon');
-            marketStatus.textContent = `今天${marketData.currentMarketName}圩日`;
+            
+            marketStatus.textContent = `${selectedDateString === currentDateString ? '今天' : '当天'}${marketData.marketName}圩日`;
             marketStatus.className = 'status-text market-day';
             marketIcon.style.display = 'block';
-            
-            // 添加调试信息到控制台
-            console.log('圩日计算调试信息:', marketData.debugInfo);
-            console.log('圩日名称数组:', marketNames);
-            console.log('当前圩日名称:', marketData.currentMarketName);
-            
-            // 添加调试信息到控制台
-            console.log('圩日计算调试信息:', marketData.debugInfo);
-            console.log('圩日名称数组:', marketNames);
-            console.log('当前圩日名称:', marketData.currentMarketName);
 
             // 更新下一个圩日信息
-            document.getElementById('daysLeft').textContent = `距离下一个圩日还有: ${marketData.daysToNextMarket}天`;
-            document.getElementById('nextDate').textContent = `下一个圩日: ${marketData.nextMarketDay} (${marketData.nextMarketName})`;
+            if (selectedDateString === currentDateString) {
+                document.getElementById('daysLeft').textContent = `距离下一个圩日还有: ${marketData.daysToNextMarket}天`;
+            } else {
+                document.getElementById('daysLeft').textContent = `下一个圩日还有: ${marketData.daysToNextMarket}天`;
+            }
+            document.getElementById('nextDate').textContent = `下一个圩日: ${marketData.nextMarketDateString} (${marketData.nextMarketName})`;
 
             // 更新历史记录
             const historyList = document.getElementById('historyList');
@@ -355,15 +486,75 @@
             });
         }
 
+        // 初始化日期选择器
+        function initializeDatePicker() {
+            const datePicker = document.getElementById('datePicker');
+            const today = new Date();
+            const todayString = getCurrentDateString(today);
+            
+            // 从本地存储加载上次选择的日期
+            const savedDate = localStorage.getItem('selectedMarketDate');
+            
+            // 设置默认日期（优先使用保存的日期，否则使用今天）
+            if (savedDate) {
+                // 验证保存的日期格式是否正确
+                const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+                if (dateRegex.test(savedDate)) {
+                    datePicker.value = savedDate;
+                    updateDisplay(parseDateString(savedDate));
+                } else {
+                    console.error('保存的日期格式不正确:', savedDate);
+                    localStorage.removeItem('selectedMarketDate');
+                    datePicker.value = todayString;
+                    updateDisplay(today);
+                }
+            } else {
+                datePicker.value = todayString;
+                updateDisplay(today);
+            }
+            
+            // 添加日期选择事件监听器
+            datePicker.addEventListener('change', function() {
+                const selectedDate = parseDateString(this.value);
+                updateDisplay(selectedDate);
+                
+                // 将选择的日期保存到本地存储
+                localStorage.setItem('selectedMarketDate', this.value);
+            });
+        }
+
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
-            updateDisplay();
+            // 初始化日期选择器
+            initializeDatePicker();
             
-            // 每分钟更新一次（可选）
-            setInterval(updateDisplay, 60000);
+            // 检查是否需要回到当日日期
+            const datePicker = document.getElementById('datePicker');
+            const today = getCurrentDateString(new Date());
+            
+            // 如果当前选择的不是当日日期，则切换回当日日期
+            if (datePicker.value !== today) {
+                datePicker.value = today;
+                updateDisplay(new Date());
+                // 更新本地存储
+                localStorage.setItem('selectedMarketDate', today);
+            }
+            
+            // 每分钟更新一次当前时间（如果显示的是当前日期）
+            setInterval(() => {
+                if (datePicker.value === today) {
+                    updateDisplay();
+                }
+            }, 60000);
+            
+            // 设置自动刷新（每5分钟刷新一次）
+            const refreshInterval = 5 * 60 * 1000; // 5分钟的毫秒数
+            setInterval(() => {
+                location.reload();
+            }, refreshInterval);
         });
 
-        // 添加一些交互效果
+        // 添加点击效果
         document.addEventListener('click', function(e) {
             if (e.target.classList.contains('record-item')) {
                 e.target.style.transform = 'scale(0.98)';
